@@ -71,7 +71,7 @@ def login_verify():
 
 @app.route('/register')
 def register():
-  return 1
+  return render_template('login.html')
 
 
 @app.route('/ADMIN/add')
@@ -203,7 +203,29 @@ def admin():
 
 @app.route('/user')
 def user():
-  return render_template('user.html', user={'user': 'user', 'USER': 'USER'})
+  id_ho = show(['ho_gd'], ['ID_HO'],conditions=[('id_tai_khoan', f'$ = {session["id"]}')])
+  print(id_ho)
+  store = []
+  if len(id_ho) == 1:
+    phi = show(['dich_vu'], ['ID_DICH_VU', 'TEN_DICH_VU'], [('BAT_BUOC','$ = 1')])
+    data_tc = show(
+                ['thu_chi', 'dich_vu'], ['ID_DICH_VU','TEN_DICH_VU','GIA_TIEN', 'DA_THU', 'ngay_thu'],
+                conditions=[
+                    ('id_dich_vu',f'$ in ({",".join([str(x["id_dich_vu"]) for x in phi])})'),
+                    ('ID_HO', f'$ in ({",".join([str(x["id_ho"]) for x in id_ho])})'),
+                ],
+                condition_aggressive=[('month(ngay_thu)', f'$ = {datetime.datetime.now().month}'),('year(ngay_thu)', f'$ = {datetime.datetime.now().year}')],
+                )
+    # print(data_tc)
+    store = [{"ID_DICH_VU":k['id_dich_vu'], "TEN_DICH_VU":k['ten_dich_vu'], "CAN_PHAI_DONG": "Chưa đóng" } for k in phi]
+    # print(store)
+    for data in data_tc:
+      if (data['gia_tien'] >= data['da_thu']):
+        for dic in store:
+          if dic['ID_DICH_VU'] == data['id_dich_vu']:
+            dic['CAN_PHAI_DONG'] = data["gia_tien"] - data["da_thu"]
+    print(store)
+  return render_template('user.html', user={'user': 'user', 'USER': 'USER', 'data': store})
 
 
 '''

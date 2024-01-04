@@ -170,7 +170,7 @@ def show(table_name,
                     for x in conditions]) if conditions else "",
       f"group by {find(group_by)}" if group_by else "",
       "having " + ' and '.join(
-          [x[1].replace("$", find(x[0]))
+          [x[1].replace("$", x[0])   # toi co tinh bo find(x[0]) vi having co the yeu cau func(x)
            for x in condition_aggressive]) if condition_aggressive else "",
       f"order by {find(sort_by)}" if sort_by else "",
       f"limit {limit}" if limit else "")
